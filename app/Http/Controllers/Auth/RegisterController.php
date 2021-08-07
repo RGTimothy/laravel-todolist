@@ -67,6 +67,17 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'access_token' => self::generateAccessToken($data)
         ]);
+    }
+
+    /**
+     * Generate access token for registered user
+     *
+     * @return string
+     */
+    protected function generateAccessToken($data)
+    {
+        return hash('sha256', $data['email']);
     }
 }
