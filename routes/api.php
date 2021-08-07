@@ -16,3 +16,8 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::group(['prefix' => '/to-do', 'middleware' => 'ensure.token'], function () {
+	Route::get('/list', 'TodoItemController@list');
+	Route::post('/create', 'TodoItemController@create');
+});
