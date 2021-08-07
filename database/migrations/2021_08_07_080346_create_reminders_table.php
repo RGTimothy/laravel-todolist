@@ -18,6 +18,7 @@ class CreateRemindersTable extends Migration
             $table->string('name', 50);
             $table->integer('unix_value');
             $table->timestamps();
+            $table->softDeletes()->nullable();
         });
     }
 

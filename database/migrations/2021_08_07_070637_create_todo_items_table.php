@@ -23,6 +23,7 @@ class CreateTodoItemsTable extends Migration
             $table->integer('reminder_id')->nullable();
             $table->string('status', 20)->nullable();
             $table->timestamps();
+            $table->softDeletes()->nullable();
         });
     }
 
