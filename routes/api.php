@@ -22,4 +22,5 @@ Route::group(['prefix' => '/to-do', 'middleware' => 'ensure.token'], function ()
 	Route::get('/{id?}', 'TodoItemController@list');
 	Route::post('/{id}', 'TodoItemController@update');
 	Route::delete('/{id}', 'TodoItemController@delete');
+	Route::post('/mark/{id}', 'TodoItemController@mark');
 });

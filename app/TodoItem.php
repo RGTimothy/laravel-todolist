@@ -103,11 +103,12 @@ class TodoItem extends Model
     		return false;
     	}
 
-    	$item->title = $data['title'];
-    	$item->body = $data['body'];
-    	$item->due_date = $data['due_date'];
-    	$item->attachment = $data['attachment'];
-    	$item->reminder_id = $data['reminder_id'];
+    	// update only for not null value
+    	foreach ($data as $key => $value) {
+    		if (!is_null($value)) {
+    			$item->{$key} = $value;
+    		}
+    	}
 
     	return $item->save();
     }

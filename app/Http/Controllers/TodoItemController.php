@@ -122,7 +122,7 @@ class TodoItemController extends BaseController
     	}
     }
 
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id, $isMark = false) {
     	try {
     		// validate user id from header
     		$userId = $this->getUserIdFromRequest($request);
@@ -133,35 +133,42 @@ class TodoItemController extends BaseController
     		// validate request body
     		$request['id'] = $id;
     		$rules = [
-    			'id' => 'exists:todo_items,id,user_id,' . $userId . ',deleted_at,NULL',
-		        'title' => 'required|max:50',
-		        'body' => 'required',
-		        'due_date' => 'nullable|date',
-		        'attachment' => 'required|file|max:2048',
-		        'reminder_id' => 'required|exists:reminders,id,deleted_at,NULL'
-		    ];
+    			'id' => 'exists:todo_items,id,user_id,' . $userId . ',deleted_at,NULL'
+    		];
+    		if ($isMark) {
+    			$rules['status'] = 'required|in:'. TodoItem::STATUS_COMPLETE . ',' . TodoItem::STATUS_INCOMPLETE;
+    		} else {
+    			$rules['title'] = 'required|max:50';
+    			$rules['body'] = 'required';
+    			$rules['due_date'] = 'nullable|date';
+    			$rules['attachment'] = 'required|file|max:2048';
+    			$rules['reminder_id'] = 'required|exists:reminders,id,deleted_at,NULL';
+    		}
 		    $validationErrors = $this->validateRequest($request, $rules);
 		    if (count($validationErrors) > 0) {
                 return $this->errorResponse($validationErrors);
             }
 
-            // upload attachment file
-            $profileFile = null;
-            if ($file = $request->file('attachment')) {
-	           $destinationPath = env('UPLOAD_FOLDER', 'uploads') . '/'; // upload path
-	           $profileFile = $userId . '-' . date('YmdHis') . '.' . $file->getClientOriginalExtension();
-
-	           Util::uploadFile($file, $destinationPath, $profileFile);
-	       	}
-
             // update data based on request
-            $data = [
-            	'title' => $request->get('title'),
-            	'body' => $request->get('body'),
-            	'due_date' => $request->get('due_date'),
-            	'attachment' => $profileFile,
-            	'reminder_id' => $request->get('reminder_id')
-            ];
+            $profileFile = null;
+            $data = [];
+            if ($isMark) {
+            	$data['status'] = $request->get('status');
+            } else {
+            	// upload attachment file
+	            if ($file = $request->file('attachment')) {
+		           $destinationPath = env('UPLOAD_FOLDER', 'uploads') . '/'; // upload path
+		           $profileFile = $userId . '-' . date('YmdHis') . '.' . $file->getClientOriginalExtension();
+
+		           Util::uploadFile($file, $destinationPath, $profileFile);
+		       	}
+
+            	$data['title'] = $request->get('title');
+				$data['body'] = $request->get('body');
+				$data['due_date'] = $request->get('due_date');
+				$data['attachment'] = $profileFile;
+				$data['reminder_id'] = $request->get('reminder_id');
+            }
 
             \DB::beginTransaction();
             
@@ -257,5 +264,10 @@ class TodoItemController extends BaseController
     		\DB::rollBack();
     		return $this->exception($e);
     	}
+    }
+
+    public function mark(Request $request, $id) {
+    	$isMark = true;
+    	return $this->update($request, $id, $isMark);
     }
 }
