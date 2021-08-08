@@ -171,6 +171,8 @@ class TodoItemController extends BaseController
             $responseStatus = 1;
             $responseMessage = \Config::get('messages.UpdateItemSuccessful');
             if ($updateItem) {
+            	\DB::commit();
+
             	// if updated, delete old attachment from storage if exists
             	if (!is_null($profileFile)) {
             		if (!is_null($itemBeforeUpdate->attachment)) {
@@ -178,8 +180,6 @@ class TodoItemController extends BaseController
             			Util::deleteFile($fullPathOldFile);
             		}
 	       		}
-
-            	\DB::commit();
             } else {
             	\DB::rollBack();
 
@@ -192,6 +192,59 @@ class TodoItemController extends BaseController
 
             	$responseStatus = 0;
             	$responseMessage = \Config::get('messages.UpdateItemFailed');
+            }
+
+    		$response = [
+    			'success' => $responseStatus,
+    			'message' => $responseMessage
+    		];
+
+    		return $this->successResponse($response);
+    	} catch (\Exception $e) {
+    		\DB::rollBack();
+    		return $this->exception($e);
+    	}
+    }
+
+    public function delete(Request $request, $id) {
+    	try {
+    		// validate user id from header
+    		$userId = $this->getUserIdFromRequest($request);
+    		if ($userId <= 0) {
+    			return $this->errorResponse(['user_id' => [\Config::get('messages.UserNotFound')]]);
+    		}
+
+    		// validate item id
+    		$request['id'] = $id;
+    		$rules = [
+    			'id' => 'exists:todo_items,id,user_id,' . $userId . ',deleted_at,NULL'
+		    ];
+		    $validationErrors = $this->validateRequest($request, $rules);
+		    if (count($validationErrors) > 0) {
+                return $this->errorResponse($validationErrors);
+            }
+
+            \DB::beginTransaction();
+
+            $itemBeforeDelete = TodoItem::find($id);
+            $deleteItem = TodoItem::deleteItem($id);
+
+            $responseStatus = 1;
+            $responseMessage = \Config::get('messages.DeleteItemSuccessful');
+            if ($deleteItem) {
+            	\DB::commit();
+
+            	// if data deleted, then delete the uploaded file
+            	if (!is_null($itemBeforeDelete->attachment)) {
+            		$destinationPath = env('UPLOAD_FOLDER', 'uploads') . '/'; // upload path
+            		$fullPathOldFile = public_path() . '/' . $destinationPath . $itemBeforeDelete->attachment;
+            		Util::deleteFile($fullPathOldFile);
+	       		}
+            } else {
+            	\DB::rollBack();
+
+            	$responseStatus = 0;
+            	$responseMessage = \Config::get('messages.DeleteItemFailed');
             }
 
     		$response = [

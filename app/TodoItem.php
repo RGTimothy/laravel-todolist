@@ -110,5 +110,11 @@ class TodoItem extends Model
     	$item->reminder_id = $data['reminder_id'];
 
     	return $item->save();
-    } 
+    }
+
+    public static function deleteItem($id) {
+    	$item = TodoItem::find($id);
+
+    	return $item->delete();
+    }
 }
