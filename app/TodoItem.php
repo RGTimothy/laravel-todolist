@@ -73,6 +73,7 @@ class TodoItem extends Model
 	    	'todo_items.due_date',
 	    	'todo_items.attachment',
 	    	'todo_items.reminder_id',
+	    	'reminders.name AS reminder_name',
 	    	'todo_items.status',
 	    	'todo_items.created_at'
     	]);
