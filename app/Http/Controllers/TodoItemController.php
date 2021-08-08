@@ -9,11 +9,43 @@ use Illuminate\Support\Facades\File;
 
 class TodoItemController extends BaseController
 {
-	public function list() {
+	public function list(Request $request, $id = null) {
 		try {
-			return TodoItem::all();
-		} catch (Exception $e) {
-			
+			// validate user id from header
+    		$userId = $this->getUserIdFromRequest($request);
+    		if ($userId <= 0) {
+    			return $this->errorResponse(['user_id' => [\Config::get('messages.UserNotFound')]]);
+    		}
+
+    		// validate request body
+    		$rules = [
+		        'status' => 'nullable|in:'. TodoItem::STATUS_COMPLETE . ',' . TodoItem::STATUS_INCOMPLETE,
+		        'order_by' => 'nullable|string|in:id,due_date',
+		        'order_state' => 'nullable|string|in:asc,desc'
+		    ];
+		    $validationErrors = $this->validateRequest($request, $rules);
+		    if (count($validationErrors) > 0) {
+                return $this->errorResponse($validationErrors);
+            }
+
+            $statusFilter = $request->get('status');
+            $orderBy = 'todo_items';
+            if (!is_null($request->get('order_by'))) {
+            	$orderBy = $orderBy . '.' . $request->get('order_by');
+            } else {
+            	$orderBy = $orderBy . '.id';
+            }
+            $orderState = $request->get('order_state');
+
+            $data = TodoItem::getList($userId, $id, $statusFilter, $orderBy, $orderState);
+
+            $response = [
+            	'list' => $data
+            ];
+
+			return $this->successResponse($response);
+		} catch (\Exception $e) {
+			return $this->exception($e);
 		}
 	}
 
@@ -40,12 +72,12 @@ class TodoItemController extends BaseController
 
             \DB::beginTransaction();
 
+            // upload attachment file
             $profileFile = null;
             if ($files = $request->file('attachment')) {
 	           $destinationPath = 'uploads/'; // upload path
 	           $profileFile = $userId . '-' . date('YmdHis') . '.' . $files->getClientOriginalExtension();
 	           $files->move($destinationPath, $profileFile);
-	           // $insert['file'] = "$profilefile";
 	       	}
 
 	       	$insert = [

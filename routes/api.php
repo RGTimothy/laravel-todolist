@@ -18,6 +18,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::group(['prefix' => '/to-do', 'middleware' => 'ensure.token'], function () {
-	Route::get('/list', 'TodoItemController@list');
+	Route::get('/list/{id?}', 'TodoItemController@list');
 	Route::post('/create', 'TodoItemController@create');
 });
