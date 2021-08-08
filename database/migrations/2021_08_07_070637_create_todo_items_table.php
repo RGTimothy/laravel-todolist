@@ -21,6 +21,7 @@ class CreateTodoItemsTable extends Migration
             $table->date('due_date')->nullable();
             $table->string('attachment')->nullable();
             $table->integer('reminder_id')->nullable();
+            $table->tinyInteger('is_email_sent')->default(0);
             $table->string('status', 20)->nullable();
             $table->timestamp('created_at')->default(\DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->nullable();
