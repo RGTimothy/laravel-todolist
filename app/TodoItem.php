@@ -95,4 +95,20 @@ class TodoItem extends Model
 
     	return $data->id;
     }
+
+    public static function updateItem($id, $data = []) {
+    	$item = TodoItem::find($id);
+
+    	if (is_null($item)) {
+    		return false;
+    	}
+
+    	$item->title = $data['title'];
+    	$item->body = $data['body'];
+    	$item->due_date = $data['due_date'];
+    	$item->attachment = $data['attachment'];
+    	$item->reminder_id = $data['reminder_id'];
+
+    	return $item->save();
+    } 
 }

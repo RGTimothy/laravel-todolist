@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\BaseController;
 use App\TodoItem;
-use Illuminate\Support\Facades\File;
+use App\Util;
 
 class TodoItemController extends BaseController
 {
@@ -74,10 +74,11 @@ class TodoItemController extends BaseController
 
             // upload attachment file
             $profileFile = null;
-            if ($files = $request->file('attachment')) {
-	           $destinationPath = 'uploads/'; // upload path
-	           $profileFile = $userId . '-' . date('YmdHis') . '.' . $files->getClientOriginalExtension();
-	           $files->move($destinationPath, $profileFile);
+            if ($file = $request->file('attachment')) {
+	           $destinationPath = env('UPLOAD_FOLDER', 'uploads') . '/'; // upload path
+	           $profileFile = $userId . '-' . date('YmdHis') . '.' . $file->getClientOriginalExtension();
+
+	           Util::uploadFile($file, $destinationPath, $profileFile);
 	       	}
 
 	       	$insert = [
@@ -97,12 +98,11 @@ class TodoItemController extends BaseController
 	       		\DB::commit();
 	       	} else {
 	       		\DB::rollBack();
-
-	       		// delete file from storage
+	       		
 	       		if (!is_null($profileFile)) {
-	       			if (File::exists($destinationPath . $profileFile)) {
-	       				File::delete(public_path() . '/' . $destinationPath . $profileFile);
-	       			}
+	       			// delete file from storage
+		       		$fullPathFile = public_path() . '/' . $destinationPath . $profileFile;
+		       		Util::deleteFile($fullPathFile);
 	       		}
 
 	       		$responseStatus = 0;
@@ -120,6 +120,89 @@ class TodoItemController extends BaseController
     		\DB::rollBack();
     		return $this->exception($e);
     	}
-    	
+    }
+
+    public function update(Request $request, $id) {
+    	try {
+    		// validate user id from header
+    		$userId = $this->getUserIdFromRequest($request);
+    		if ($userId <= 0) {
+    			return $this->errorResponse(['user_id' => [\Config::get('messages.UserNotFound')]]);
+    		}
+
+    		// validate request body
+    		$request['id'] = $id;
+    		$rules = [
+    			'id' => 'exists:todo_items,id,user_id,' . $userId . ',deleted_at,NULL',
+		        'title' => 'required|max:50',
+		        'body' => 'required',
+		        'due_date' => 'nullable|date',
+		        'attachment' => 'required|file|max:2048',
+		        'reminder_id' => 'required|exists:reminders,id,deleted_at,NULL'
+		    ];
+		    $validationErrors = $this->validateRequest($request, $rules);
+		    if (count($validationErrors) > 0) {
+                return $this->errorResponse($validationErrors);
+            }
+
+            // upload attachment file
+            $profileFile = null;
+            if ($file = $request->file('attachment')) {
+	           $destinationPath = env('UPLOAD_FOLDER', 'uploads') . '/'; // upload path
+	           $profileFile = $userId . '-' . date('YmdHis') . '.' . $file->getClientOriginalExtension();
+
+	           Util::uploadFile($file, $destinationPath, $profileFile);
+	       	}
+
+            // update data based on request
+            $data = [
+            	'title' => $request->get('title'),
+            	'body' => $request->get('body'),
+            	'due_date' => $request->get('due_date'),
+            	'attachment' => $profileFile,
+            	'reminder_id' => $request->get('reminder_id')
+            ];
+
+            \DB::beginTransaction();
+            
+            $itemBeforeUpdate = TodoItem::find($id);
+            $updateItem = TodoItem::updateItem($id, $data);
+
+            $responseStatus = 1;
+            $responseMessage = \Config::get('messages.UpdateItemSuccessful');
+            if ($updateItem) {
+            	// if updated, delete old attachment from storage if exists
+            	if (!is_null($profileFile)) {
+            		if (!is_null($itemBeforeUpdate->attachment)) {
+            			$fullPathOldFile = public_path() . '/' . $destinationPath . $itemBeforeUpdate->attachment;
+            			Util::deleteFile($fullPathOldFile);
+            		}
+	       		}
+
+            	\DB::commit();
+            } else {
+            	\DB::rollBack();
+
+            	// if fail to update, delete new uploaded file
+            	if (!is_null($profileFile)) {
+	       			// delete file from storage
+		       		$fullPathFile = public_path() . '/' . $destinationPath . $profileFile;
+		       		Util::deleteFile($fullPathFile);
+	       		}
+
+            	$responseStatus = 0;
+            	$responseMessage = \Config::get('messages.UpdateItemFailed');
+            }
+
+    		$response = [
+    			'success' => $responseStatus,
+    			'message' => $responseMessage
+    		];
+
+    		return $this->successResponse($response);
+    	} catch (\Exception $e) {
+    		\DB::rollBack();
+    		return $this->exception($e);
+    	}
     }
 }

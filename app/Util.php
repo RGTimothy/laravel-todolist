@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Database\Eloquent\Model;
 
 class Util extends Model
@@ -46,5 +47,19 @@ class Util extends Model
     	];
 
     	return response()->json($data);
+    }
+
+    public static function uploadFile($file, $destinationPath, $filename) {
+    	$file->move($destinationPath, $filename);
+
+    	return true;
+    }
+
+    public static function deleteFile($fullPath) {
+    	if (File::exists($fullPath)) {
+    		File::delete($fullPath);
+    	}
+
+    	return true;
     }
 }
