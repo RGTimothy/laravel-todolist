@@ -20,6 +20,7 @@ class TodoItem extends Model
     	'due_date',
     	'attachment',
     	'reminder_id',
+    	'is_email_sent',
     	'status'
     ];
 
@@ -32,7 +33,7 @@ class TodoItem extends Model
     	return $query;
     }
 
-    public static function getList(
+    public static function _getList(
     	$userId = null, 
     	$id = null, 
     	$status = null, 
@@ -71,14 +72,28 @@ class TodoItem extends Model
 	    	'todo_items.title',
 	    	'todo_items.body',
 	    	'todo_items.due_date',
+	    	\DB::raw('UNIX_TIMESTAMP(todo_items.due_date) AS due_date_unix'),
 	    	'todo_items.attachment',
 	    	'todo_items.reminder_id',
 	    	'reminders.name AS reminder_name',
+	    	'reminders.unix_value AS reminder_unix_value',
 	    	'todo_items.status',
 	    	'todo_items.created_at'
     	]);
 
     	$query->orderBy($orderBy, $orderState);
+
+    	return $query;
+    }
+
+    public static function getList(
+    	$userId = null, 
+    	$id = null, 
+    	$status = null, 
+    	$orderBy = 'todo_items.id', 
+    	$orderState = 'ASC'
+    ) {
+    	$query = self::_getList($userId, $id, $status, $orderBy, $orderState);
 
     	return $query->get();
     }

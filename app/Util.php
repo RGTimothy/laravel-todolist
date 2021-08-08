@@ -62,4 +62,10 @@ class Util extends Model
 
     	return true;
     }
+
+    public static function getCurrentUnixTimestamp() {
+    	$currentUnixTimestamp = \DB::selectOne('SELECT UNIX_TIMESTAMP(CURRENT_TIMESTAMP) AS current_unix_timestamp')->current_unix_timestamp;
+
+    	return intval($currentUnixTimestamp);
+    }
 }
