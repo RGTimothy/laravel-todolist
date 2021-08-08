@@ -22,7 +22,8 @@ class CreateTodoItemsTable extends Migration
             $table->string('attachment')->nullable();
             $table->integer('reminder_id')->nullable();
             $table->string('status', 20)->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->default(\DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamp('updated_at')->nullable();
             $table->softDeletes()->nullable();
         });
     }

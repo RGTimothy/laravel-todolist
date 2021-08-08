@@ -17,7 +17,8 @@ class CreateRemindersTable extends Migration
             $table->bigIncrements('id');
             $table->string('name', 50);
             $table->integer('unix_value');
-            $table->timestamps();
+            $table->timestamp('created_at')->default(\DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamp('updated_at')->nullable();
             $table->softDeletes()->nullable();
         });
     }
