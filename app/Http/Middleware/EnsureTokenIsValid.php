@@ -18,7 +18,7 @@ class EnsureTokenIsValid
     {
         if (is_null($request->header('Authorization'))) {
             $errorArr = [
-                'user_id' => \Config::get('error-messages.AuthTokenIsRequired')
+                'user_id' => \Config::get('messages.AuthTokenIsRequired')
             ];
 
             return Util::response([], $errorArr, []);

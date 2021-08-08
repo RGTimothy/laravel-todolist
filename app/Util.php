@@ -11,9 +11,13 @@ class Util extends Model
     	if (!is_array($response)) {
     		$response = new \stdClass();
     		$exceptions = [
-    			'message' => \Config::get('error-messages.InvalidResponseFormat'),
+    			'message' => \Config::get('messages.InvalidResponseFormat'),
     			'code' => 0
     		];
+    	} else {
+    		if (count($response) <= 0) {
+    			$response = new \stdClass();
+    		}
     	}
 
     	$errorsArr = [];
