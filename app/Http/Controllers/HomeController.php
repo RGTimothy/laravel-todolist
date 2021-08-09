@@ -30,8 +30,10 @@ class HomeController extends Controller
         $reminders = self::callApiReminder($accessToken);
 
         return view('home')->with([
+            'api_baseurl' => env('API_BASEURL'),
+            'access_token' => base64_encode($accessToken),
             'user_name' => Auth::user()->name,
-            'reminders' => $reminders,
+            'reminders' => $reminders->data->list,
             'items' => $list->data->list
         ]);
     }
