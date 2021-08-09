@@ -10,6 +10,7 @@ return [
     'UpdateItemFailed' => 'Failed to update the item, please try again',
     'DeleteItemSuccessful' => 'Item has been deleted successfully',
     'DeleteItemFailed' => 'Failed to delete the item, please try again',
+    'ReminderTimeHasAlreadyPassed' => 'Reminder time has already passed',
 ];
 
 ?>

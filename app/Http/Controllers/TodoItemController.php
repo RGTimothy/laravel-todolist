@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\BaseController;
 use App\TodoItem;
+use App\Reminder;
 use App\Util;
 
 class TodoItemController extends BaseController
@@ -68,6 +69,20 @@ class TodoItemController extends BaseController
 		    $validationErrors = $this->validateRequest($request, $rules);
 		    if (count($validationErrors) > 0) {
                 return $this->errorResponse($validationErrors);
+            }
+
+            // check & validate due date and reminder time
+            if ($request->get('due_date') && $request->get('reminder_id')) {
+            	$currentUnix = Util::getCurrentUnixTimestamp();
+            	$reminder = Reminder::find($request->get('reminder_id'));
+
+            	$dueDateUnix = strtotime($request->get('due_date'));
+            	$reminderUnix = $dueDateUnix - $reminder->unix_value;
+
+            	if ($currentUnix > $reminderUnix) {
+            		$error = [ 'reminder_id' => \Config::get('messages.ReminderTimeHasAlreadyPassed') ];
+            		return $this->errorResponse($error);
+            	}
             }
 
             \DB::beginTransaction();
@@ -147,6 +162,20 @@ class TodoItemController extends BaseController
 		    $validationErrors = $this->validateRequest($request, $rules);
 		    if (count($validationErrors) > 0) {
                 return $this->errorResponse($validationErrors);
+            }
+
+            // check & validate due date and reminder time
+            if ($request->get('due_date') && $request->get('reminder_id')) {
+            	$currentUnix = Util::getCurrentUnixTimestamp();
+            	$reminder = Reminder::find($request->get('reminder_id'));
+
+            	$dueDateUnix = strtotime($request->get('due_date'));
+            	$reminderUnix = $dueDateUnix - $reminder->unix_value;
+
+            	if ($currentUnix > $reminderUnix) {
+            		$error = [ 'reminder_id' => \Config::get('messages.ReminderTimeHasAlreadyPassed') ];
+            		return $this->errorResponse($error);
+            	}
             }
 
             // update data based on request
