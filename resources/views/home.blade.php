@@ -109,7 +109,7 @@
                       <td> {{$item->body}} </td>
                       <td> {{$item->due_date}} </td>
                       <td> {{$item->reminder_name}} </td>
-                      <td> {{$item->attachment}} </td>
+                      <td> <a href="{{$item->attachmentUrl}}"> {{$item->attachment}} </a> </td>
                       <td> {{$item->status}} </td>
                       <td> <button type="button" id="editBtn" value="{{$item->id}}" onclick="clickEdit(this.value)">Edit</button> <button type="button" id="deleteBtn" value="{{$item->id}}" onclick="clickDelete(this.value)">Delete</button> <button type="button" id="completeBtn" value="{{$item->id}}" onclick="clickComplete(this.value)">Complete</button></td>
                   </tr>

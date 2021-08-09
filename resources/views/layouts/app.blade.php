@@ -57,7 +57,7 @@
                                     newTableBody += "<td> " + val["body"] + " </td>";
                                     newTableBody += "<td> " + val["due_date"] + " </td>";
                                     newTableBody += "<td> " + val["reminder_name"] + " </td>";
-                                    newTableBody += "<td> " + val["attachment"] + " </td>";
+                                    newTableBody += '<td> <a href="'+val["attachmentUrl"]+'">' + val["attachment"] + "</a> </td>";
                                     newTableBody += "<td> " + val["status"] + " </td>";
                                     newTableBody += '<td> <button type="button" id="editBtn" value="'+val["id"]+'" onclick="clickEdit(this.value)">Edit</button> <button type="button" id="deleteBtn" value="'+val["id"]+'" onclick="clickDelete(this.value)">Delete</button> <button type="button" id="completeBtn" value="'+val["id"]+'" onclick="clickComplete(this.value)">Complete</button></td>';
 
