@@ -40,8 +40,33 @@ class TodoItemController extends BaseController
 
             $data = TodoItem::getList($userId, $id, $statusFilter, $orderBy, $orderState);
 
+            $newData = [];
+            foreach ($data as $item) {
+                $attachmentUrl = '';
+                if (!is_null($item->attachment)) {
+                    $attachmentUrl = env('APP_URL') . '/' . env('UPLOAD_FOLDER') . '/' . $item->attachment;
+                }
+                array_push($newData, [
+                    'id' => $item->id,
+                    'user_id' => $item->user_id,
+                    'user_name' => $item->user_name,
+                    'user_email' => $item->user_email,
+                    'title' => $item->title,
+                    'body' => $item->body,
+                    'due_date' => $item->due_date,
+                    'due_date_unix' => $item->due_date_unix,
+                    'attachment' => $item->attachment,
+                    'attachmentUrl' => $attachmentUrl,
+                    'reminder_id' => $item->reminder_id,
+                    'reminder_name' => $item->reminder_name,
+                    'reminder_unix_value' => $item->reminder_unix_value,
+                    'status' => $item->status,
+                    'created_at' => (string) $item->created_at,
+                ]);
+            }
+
             $response = [
-            	'list' => $data
+            	'list' => $newData
             ];
 
 			return $this->successResponse($response);
