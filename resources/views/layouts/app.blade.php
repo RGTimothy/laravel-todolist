@@ -31,7 +31,7 @@
             var order_by_due_date = $("#order_by_due_date").is(":checked");
             if (order_by_due_date) {
                 order_by = "due_date";
-                order_by_state = "desc";
+                order_by_state = "asc";
             }
 
             var access_token = "{{ $access_token ?? '' }}";
