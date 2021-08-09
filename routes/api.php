@@ -24,3 +24,7 @@ Route::group(['prefix' => '/to-do', 'middleware' => 'ensure.token'], function ()
 	Route::delete('/{id}', 'TodoItemController@delete');
 	Route::post('/mark/{id}', 'TodoItemController@mark');
 });
+
+Route::group(['prefix' => 'reminder'], function () {
+	Route::get('/', 'ReminderController@list');
+});
